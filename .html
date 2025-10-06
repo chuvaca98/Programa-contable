@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistema Contable - Café</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style id="app-style">
+        :root {
+            --primary: #6F4E37;
+            --secondary: #C4A484;
+            --light-brown: #D2B48C;
+            --dark-brown: #3A2718;
+            --cream: #FFF8E7;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--cream);
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(to bottom, var(--primary), var(--dark-brown));
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-header i {
+            font-size: 1.8rem;
+            margin-right: 5px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background-color: rgba(255,255,255,0.15);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .sidebar-menu li i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-brown);
+            border-color: var(--dark-brown);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--dark-brown);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--light-brown);
+            border-color: var(--light-brown);
+        }
+        
+        #resetDataBtn {
+            background-color: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+        }
+        
+        #resetDataBtn:hover {
+            background-color: var(--secondary);
+            color: var(--dark-brown);
+            border-color: var(--secondary);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 1px solid var(--secondary);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 8px 8px 0 0 !important;
+            font-weight: bold;
+            padding: 12px 20px;
+            border: none;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            background-color: var(--secondary);
+            color: var(--dark-brown);
+            font-weight: 600;
+            border: none;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: rgba(255,255,255,0.7);
+        }
+        
+        .table tr:nth-child(odd) {
+            background-color: var(--cream);
+        }
+        
+        .table tr:hover {
+            background-color: var(--light-brown);
+            transition: background-color 0.3s ease;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            padding: 10px;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+        }
+        
+        .overlay.active {
+            display: flex;
+        }
+        
+        .form-overlay {
+            background: #fff;
+            border-radius: 8px;
+            padding: 2rem;
+            min-width: 350px;
+            max-width: 500px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .form-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .close-btn:hover {
+            transform: scale(1.1);
+            color: var(--primary);
+        }
+        
+        .form-label {
+            color: var(--dark-brown);
+            font-weight: 500;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(111, 78, 55, 0.25);
+        }
+        
+        .form-container {
+            background-color: rgba(255,255,255,0.6);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--secondary);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+            background-color: rgba(255,255,255,0.8);
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 25px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--dark-brown);
+            font-weight: 600;
+        }
+        
+        .action-btn {
+            cursor: pointer;
+            margin-right: 10px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .kpi-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .kpi-card p {
+            color: var(--dark-brown);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--dark-brown);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary);
+            border-bottom-color: transparent;
+            border-top: 2px solid var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-tabs .nav-link:hover:not(.active) {
+            border-color: transparent;
+            background-color: rgba(111, 78, 55, 0.1);
+        }
+        
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+        }
+        
+        .modal-footer {
+            background-color: var(--cream);
+        }
+
+        .toast-container {
+          z-index: 1080;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-coffee"></i> CaféConta</h3>
+            <p class="mb-0">Sistema Contable</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li data-section="invoices" class="active"><i class="fas fa-file-invoice"></i> Facturas</li>
+            <li data-section="transactions"><i class="fas fa-exchange-alt"></i> Transacciones</li>
+            <li data-section="inventory"><i class="fas fa-warehouse"></i> Inventario</li>
+            <li data-section="summary"><i class="fas fa-chart-line"></i> Resumen Mensual</li>
+            <li data-section="customer"><i class="fas fa-users"></i> Clientes</li>
+        </ul>
+        <div class="mt-auto p-3">
+            <button id="resetDataBtn" class="btn btn-sm btn-outline-light w-100">
+                <i class="fas fa-trash"></i> Resetear Datos
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Invoices Section -->
+        <div id="invoices" class="section active">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Facturas</h1>
+                <button id="newInvoiceBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nueva Factura
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    Listado de Facturas
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Cantidad (kg)</th>
+                                    <th>Tipo de Café</th>
+                                    <th>Monto Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoicesTableBody">
+                                <!-- Invoice data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Section -->
+        <div id="transactions" class="section">
+            <h1>Transacciones</h1>
+            <ul class="nav nav-tabs" id="transactionsTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" id="expenses-tab" data-bs-toggle="tab" href="#expenses" role="tab">Gastos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="revenues-tab" data-bs-toggle="tab" href="#revenues" role="tab">Ingresos</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="expenses" role="tabpanel">
+                    <div class="form-container">
+                        <h4>Registrar Gasto</h4>
+                        <form id="expenseForm">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="expenseDate" class="form-label">Fecha</label>
+                                    <input type="text" class="form-control date-picker" id="expenseDate" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="expenseAmount" class="form-label">Monto</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="expenseAmount" min="0" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="expenseCategory" class="form-label">Categoría</label>
+                                    <select class="form-select" id="expenseCategory" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Café Mojado">Café Mojado</option>
+                                        <option value="Café Lavado">Café Lavado</option>
+                                        <option value="Cacao">Cacao</option>
+                                        <option value="Transporte">Transporte</option>
+                                        <option value="Suministros">Suministros</option>
+                                        <option value="Salarios">Salarios</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="expenseSupplier" class="form-label">Proveedor</label>
+                                    <input type="text" class="form-control" id="expenseSupplier" required>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            Listado de Gastos
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Monto</th>
+                                            <th>Categoría</th>
+                                            <th>Proveedor</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expensesTableBody">
+                                        <!-- Expenses data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="revenues" role="tabpanel">
+                    <div class="form-container">
+                        <h4>Registrar Ingreso</h4>
+                        <form id="revenueForm">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="revenueDate" class="form-label">Fecha</label>
+                                    <input type="text" class="form-control date-picker" id="revenueDate" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="revenueAmount" class="form-label">Monto</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="revenueAmount" min="0" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="revenueCategory" class="form-label">Categoría</label>
+                                    <select class="form-select" id="revenueCategory" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Café Mojado">Café Mojado</option>
+                                        <option value="Café Lavado">Café Lavado</option>
+                                        <option value="Cacao">Cacao</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="revenueChannel" class="form-label">Canal de Venta</label>
+                                    <input type="text" class="form-control" id="revenueChannel" required>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            Listado de Ingresos
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Monto</th>
+                                            <th>Categoría</th>
+                                            <th>Canal de Venta</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="revenuesTableBody">
+                                        <!-- Revenues data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Summary Section -->
+        <div id="summary" class="section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Resumen Mensual</h1>
+                <div>
+                    <input type="month" id="monthSelector" class="form-control" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body kpi-card">
+                            <p>Total Gastos</p>
+                            <h2 id="totalExpenses">$0.00</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body kpi-card">
+                            <p>Total Ingresos</p>
+                            <h2 id="totalRevenues">$0.00</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body kpi-card">
+                            <p>Ganancia Neta</p>
+                            <h2 id="netProfit">$0.00</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            Ingresos por Tipo de Café
+                        </div>
+                        <div class="card-body">
+                            <div id="coffeeTypeChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            Gastos vs Ingresos
+                        </div>
+                        <div class="card-body">
+                            <div id="revenueExpenseChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory" class="section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Inventario</h1>
+                <button id="newInventoryItemBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuevo Ítem
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            Control de Inventario
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Categoría</th>
+                                            <th>Movimiento</th>
+                                            <th>Cantidad</th>
+                                            <th>Unidad</th>
+                                            <th>Valor Estimado</th>
+                                            <th>Fecha</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventoryTableBody">
+                                        <tr><td colspan="7" class="text-center">No hay datos de inventario disponibles</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            Distribución de Inventario
+                        </div>
+                        <div class="card-body">
+                            <div id="inventoryChart" class="chart-container"></div>
+                            
+                            <!-- New inventory summary list -->
+                            <div id="inventorySummaryList" class="mt-3">
+                                <h5 class="mb-2">Stock Disponible en Bodega</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Tipo de Café</th>
+                                                <th>Cantidad (kg)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inventorySummaryBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Section -->
+        <div id="customer" class="section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Clientes</h1>
+                <button id="newClientBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuevo Cliente
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    Listado de Clientes
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>NIT</th>
+                                    <th>RUT</th>
+                                    <th>Teléfono</th>
+                                    <th>Ciudad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientsTableBody">
+                                <tr><td colspan="7" class="text-center">No hay clientes registrados</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Invoice Form Overlay -->
+    <div id="invoiceFormOverlay" class="overlay">
+        <div class="form-overlay">
+            <div class="form-header">
+                <h3>Nueva Factura</h3>
+                <button class="close-btn" id="closeInvoiceForm">&times;</button>
+            </div>
+            <form id="invoiceForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="customerName" class="form-label">Nombre del Cliente</label>
+                        <input type="text" class="form-control" id="customerName" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="customerCedula" class="form-label">Cédula del Cliente</label>
+                        <input type="text" class="form-control" id="customerCedula">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="customerNIT" class="form-label">NIT del Cliente</label>
+                        <input type="text" class="form-control" id="customerNIT">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="customerRUT" class="form-label">RUT del Cliente</label>
+                        <input type="text" class="form-control" id="customerRUT">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="invoiceDate" class="form-label">Fecha</label>
+                        <input type="text" class="form-control date-picker" id="invoiceDate" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="quantity" class="form-label">Cantidad (kg)</label>
+                        <input type="number" class="form-control" id="quantity" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="coffeeType" class="form-label">Tipo de Café</label>
+                        <select class="form-select" id="coffeeType" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Mojado">Café Mojado</option>
+                            <option value="Lavado">Café Lavado</option>
+                            <option value="Arábico">Café Arábico</option>
+                            <option value="Caturro">Café Caturro</option>
+                            <option value="Cacao">Cacao</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="unitPrice" class="form-label">Precio Unitario</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="unitPrice" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="totalAmount" class="form-label">Monto Total</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text" class="form-control" id="totalAmount" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" id="cancelInvoice" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Inventory Form Overlay -->
+    <div id="inventoryFormOverlay" class="overlay">
+        <div class="form-overlay">
+            <div class="form-header">
+                <h3 id="inventoryFormTitle">Nuevo Ítem de Inventario</h3>
+                <button class="close-btn" id="closeInventoryForm">&times;</button>
+            </div>
+            <form id="inventoryForm">
+                <input type="hidden" id="editInventoryId">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="inventoryDate" class="form-label">Fecha del movimiento</label>
+                        <input type="text" class="form-control date-picker" id="inventoryDate" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="inventoryType" class="form-label">Tipo de Café</label>
+                        <select class="form-select" id="inventoryType" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Café Mojado">Café Mojado</option>
+                            <option value="Café Lavado">Café Lavado</option>
+                            <option value="Café Arábico">Café Arábico</option>
+                            <option value="Café Caturro">Café Caturro</option>
+                            <option value="Cacao">Cacao</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="inventoryQuantity" class="form-label">Cantidad (kg)</label>
+                        <input type="number" class="form-control" id="inventoryQuantity" min="0" step="0.01" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="inventoryUnit" class="form-label">Unidad</label>
+                        <select class="form-select" id="inventoryUnit" required>
+                            <option value="kg">Kilogramos (kg)</option>
+                            <option value="g">Gramos (g)</option>
+                            <option value="lb">Libras (lb)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="inventoryDescription" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="inventoryDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" id="cancelInventory" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="inventorySaveButton">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Client Form Overlay -->
+    <div id="clientFormOverlay" class="overlay">
+        <div class="form-overlay">
+            <div class="form-header">
+                <h3>Nuevo Cliente</h3>
+                <button class="close-btn" id="closeClientForm">&times;</button>
+            </div>
+            <form id="clientForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="clientName" class="form-label">Nombre del Cliente</label>
+                        <input type="text" class="form-control" id="clientName" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="clientCedula" class="form-label">Cédula</label>
+                        <input type="text" class="form-control" id="clientCedula">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="clientNIT" class="form-label">NIT</label>
+                        <input type="text" class="form-control" id="clientNIT">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="clientRUT" class="form-label">RUT</label>
+                        <input type="text" class="form-control" id="clientRUT">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="clientPhone" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="clientPhone">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="clientCity" class="form-label">Ciudad</label>
+                        <input type="text" class="form-control" id="clientCity">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="clientAddress" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="clientAddress">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="clientEmail" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="clientEmail">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" id="cancelClient" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmationMessage">¿Está seguro que desea eliminar este registro?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmButton">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Details Modal -->
+    <div class="modal fade" id="invoiceDetailsModal" tabindex="-1" aria-labelledby="invoiceDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoiceDetailsModalLabel">Detalles de Factura</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="invoiceDetailsForm">
+                        <input type="hidden" id="editInvoiceId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerName" class="form-label">Nombre del Cliente</label>
+                                <input type="text" class="form-control" id="editCustomerName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerCedula" class="form-label">Cédula del Cliente</label>
+                                <input type="text" class="form-control" id="editCustomerCedula">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerNIT" class="form-label">NIT del Cliente</label>
+                                <input type="text" class="form-control" id="editCustomerNIT">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerRUT" class="form-label">RUT del Cliente</label>
+                                <input type="text" class="form-control" id="editCustomerRUT">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editInvoiceDate" class="form-label">Fecha</label>
+                                <input type="text" class="form-control date-picker" id="editInvoiceDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editQuantity" class="form-label">Cantidad (kg)</label>
+                                <input type="number" class="form-control" id="editQuantity" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editCoffeeType" class="form-label">Tipo de Café</label>
+                                <select class="form-select" id="editCoffeeType" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Mojado">Café Mojado</option>
+                                    <option value="Lavado">Café Lavado</option>
+                                    <option value="Arábico">Café Arábico</option>
+                                    <option value="Caturro">Café Caturro</option>
+                                    <option value="Cacao">Cacao</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editUnitPrice" class="form-label">Precio Unitario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="editUnitPrice" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="editTotalAmount" class="form-label">Monto Total</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" class="form-control" id="editTotalAmount" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveInvoiceChanges">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Details Modal -->
+    <div class="modal fade" id="clientDetailsModal" tabindex="-1" aria-labelledby="clientDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clientDetailsModalLabel">Detalles del Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="clientDetailsForm">
+                        <input type="hidden" id="editClientId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientName" class="form-label">Nombre del Cliente</label>
+                                <input type="text" class="form-control" id="editClientName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientCedula" class="form-label">Cédula</label>
+                                <input type="text" class="form-control" id="editClientCedula">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientNIT" class="form-label">NIT</label>
+                                <input type="text" class="form-control" id="editClientNIT">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientRUT" class="form-label">RUT</label>
+                                <input type="text" class="form-control" id="editClientRUT">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientPhone" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="editClientPhone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientCity" class="form-label">Ciudad</label>
+                                <input type="text" class="form-control" id="editClientCity">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientAddress" class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="editClientAddress">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editClientEmail" class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="editClientEmail">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveClientChanges">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Invoices Modal -->
+    <div class="modal fade" id="clientInvoicesModal" tabindex="-1" aria-labelledby="clientInvoicesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clientInvoicesModalLabel">Facturas del Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Cantidad (kg)</th>
+                                    <th>Tipo de Café</th>
+                                    <th>Monto Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientInvoicesTableBody">
+                                <tr><td colspan="4" class="text-center">No hay facturas para este cliente</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Details Modal -->
+    <div class="modal fade" id="expenseDetailsModal" tabindex="-1" aria-labelledby="expenseDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="expenseDetailsModalLabel">Detalles de Gasto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="expenseDetailsForm">
+                        <input type="hidden" id="editExpenseId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editExpenseDate" class="form-label">Fecha</label>
+                                <input type="text" class="form-control date-picker" id="editExpenseDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editExpenseAmount" class="form-label">Monto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="editExpenseAmount" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editExpenseCategory" class="form-label">Categoría</label>
+                                <select class="form-select" id="editExpenseCategory" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Café Mojado">Café Mojado</option>
+                                    <option value="Café Lavado">Café Lavado</option>
+                                    <option value="Cacao">Cacao</option>
+                                    <option value="Transporte">Transporte</option>
+                                    <option value="Suministros">Suministros</option>
+                                    <option value="Salarios">Salarios</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editExpenseSupplier" class="form-label">Proveedor</label>
+                                <input type="text" class="form-control" id="editExpenseSupplier" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveExpenseChanges">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Details Modal -->
+    <div class="modal fade" id="revenueDetailsModal" tabindex="-1" aria-labelledby="revenueDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="revenueDetailsModalLabel">Detalles de Ingreso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="revenueDetailsForm">
+                        <input type="hidden" id="editRevenueId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editRevenueDate" class="form-label">Fecha</label>
+                                <input type="text" class="form-control date-picker" id="editRevenueDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editRevenueAmount" class="form-label">Monto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="editRevenueAmount" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editRevenueCategory" class="form-label">Categoría</label>
+                                <select class="form-select" id="editRevenueCategory" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Café Mojado">Café Mojado</option>
+                                    <option value="Café Lavado">Café Lavado</option>
+                                    <option value="Cacao">Cacao</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editRevenueChannel" class="form-label">Canal de Venta</label>
+                                <input type="text" class="form-control" id="editRevenueChannel" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveRevenueChanges">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="overlay" id="loadingOverlay">
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+    <script id="app-script">
+        // Initialize data in local storage if not exists
+        function initializeData() {
+            if (!localStorage.getItem('invoices')) {
+                localStorage.setItem('invoices', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('expenses')) {
+                localStorage.setItem('expenses', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('revenues')) {
+                localStorage.setItem('revenues', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('inventory')) {
+                localStorage.setItem('inventory', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('clients')) {
+                localStorage.setItem('clients', JSON.stringify([]));
+            }
+            // Initialize inventory stock if it doesn't exist
+            if (!localStorage.getItem('inventoryStock')) {
+                localStorage.setItem('inventoryStock', JSON.stringify({ 
+                    'Café Mojado': 0, 
+                    'Café Lavado': 0, 
+                    'Café Arábico': 0, 
+                    'Café Caturro': 0, 
+                    'Cacao': 0 
+                }));
+            }
+        }
+
+        // Format number as currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(amount);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat('es-CO').format(date);
+        }
+
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Generate UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Tab navigation
+        document.querySelectorAll('.sidebar-menu li').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all menu items
+                document.querySelectorAll('.sidebar-menu li').forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show the selected section
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                
+                // Lazy initialize charts when user visits summary section
+                if (sectionId === 'summary' && !window.chartsInitialized) {
+                    showLoading();
+                    requestAnimationFrame(() => {
+                        updateSummary();
+                        window.chartsInitialized = true;
+                        hideLoading();
+                    });
+                }
+            });
+        });
+
+        // Initialize date pickers and data loading
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initializeData();
+                
+                // Initialize date pickers with Spanish locale
+                flatpickr(".date-picker", {
+                    dateFormat: "Y-m-d",
+                    locale: "es"
+                });
+                
+                // Initialize month picker
+                flatpickr("#monthSelector", {
+                    plugins: [],
+                    dateFormat: "Y-m",
+                    locale: "es"
+                });
+
+                // Set current month as default for month selector
+                const today = new Date();
+                const currentMonth = today.toISOString().substring(0, 7);
+                document.getElementById('monthSelector').value = currentMonth;
+                
+                // Batch initial data loads in a single animation frame to prevent layout thrashing
+                showLoading();
+                requestAnimationFrame(() => {
+                    loadInvoices();
+                    loadExpenses();
+                    loadRevenues();
+                    loadInventory();
+                    loadClients();
+                    // Ensure inventory summary list is updated on first load
+                    const inventoryStock = JSON.parse(localStorage.getItem('inventoryStock')) || {};
+                    updateInventorySummaryList(inventoryStock);
+                    
+                    // Only initialize summary if that tab is active at startup
+                    if (document.querySelector('[data-section="summary"]').classList.contains('active')) {
+                        updateSummary();
+                        window.chartsInitialized = true;
+                    }
+                    hideLoading();
+                });
+                
+                // Set current date as default for date fields
+                const currentDate = today.toISOString().substring(0, 10);
+                document.querySelectorAll('.date-picker').forEach(picker => {
+                    picker.value = currentDate;
+                });
+            } catch (e) {
+                console.error('Error during initialization:', e);
+                hideLoading();
+            }
+        });
+
+        // New Invoice button click handler
+        document.getElementById('newInvoiceBtn').addEventListener('click', function() {
+            document.getElementById('invoiceForm').reset();
+            document.getElementById('invoiceFormOverlay').classList.add('active');
+            
+            // Set current date
+            const today = new Date();
+            document.getElementById('invoiceDate').value = today.toISOString().substring(0, 10);
+        });
+
+        // Close invoice form
+        document.getElementById('closeInvoiceForm').addEventListener('click', function() {
+            document.getElementById('invoiceFormOverlay').classList.remove('active');
+        });
+
+        document.getElementById('cancelInvoice').addEventListener('click', function() {
+            document.getElementById('invoiceFormOverlay').classList.remove('active');
+        });
+
+        // Calculate total amount when quantity or unit price changes
+        document.getElementById('quantity').addEventListener('input', calculateTotal);
+        document.getElementById('unitPrice').addEventListener('input', calculateTotal);
+
+        function calculateTotal() {
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
+            const total = quantity * unitPrice;
+            document.getElementById('totalAmount').value = total.toFixed(2);
+        }
+
+        // Save invoice form
+        document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                const coffeeType = document.getElementById('coffeeType').value;
+                const quantity = parseFloat(document.getElementById('quantity').value);
+                const fullCoffeeType = coffeeType === 'Cacao' ? 'Cacao' : 'Café ' + coffeeType;
+                const inventoryStock = JSON.parse(localStorage.getItem('inventoryStock')) || {};
+                const availableQuantity = inventoryStock[fullCoffeeType] || 0;
+                
+                if (quantity > availableQuantity) {
+                    alert(`No hay suficiente inventario disponible. Solo hay ${availableQuantity.toFixed(2)} kg de ${coffeeType} disponible.`);
+                    return;
+                }
+                
+                const invoice = {
+                    id: generateUUID(),
+                    date: document.getElementById('invoiceDate').value,
+                    customerName: document.getElementById('customerName').value,
+                    customerCedula: document.getElementById('customerCedula').value,
+                    customerNIT: document.getElementById('customerNIT').value,
+                    customerRUT: document.getElementById('customerRUT').value,
+                    quantity: quantity,
+                    coffeeType: coffeeType,
+                    unitPrice: parseFloat(document.getElementById('unitPrice').value),
+                    totalAmount: parseFloat(document.getElementById('totalAmount').value)
+                };
+                
+                const invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+                invoices.push(invoice);
+                localStorage.setItem('invoices', JSON.stringify(invoices));
+                
+                const revenue = {
+                    id: generateUUID(),
+                    date: invoice.date,
+                    amount: invoice.totalAmount,
+                    category: invoice.coffeeType === 'Cacao' ? 'Cacao' : 'Café ' + coffeeType,
+                    channel: invoice.customerName,
+                    invoiceId: invoice.id
+                };
+                
+                const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                revenuesArr.push(revenue);
+                localStorage.setItem('revenues', JSON.stringify(revenuesArr));
+                
+                inventoryStock[fullCoffeeType] -= invoice.quantity;
+                localStorage.setItem('inventoryStock', JSON.stringify(inventoryStock));
+                
+                const inventoryExit = {
+                    id: generateUUID(),
+                    date: invoice.date,
+                    type: invoice.coffeeType === 'Cacao' ? 'Cacao' : 'Café ' + coffeeType,
+                    quantity: invoice.quantity,
+                    unit: 'kg',
+                    description: `Venta (factura ID: ${invoice.id})`,
+                    value: invoice.quantity * invoice.unitPrice,
+                    movementType: 'Salida'
+                };
+                
+                const inventoryArr = JSON.parse(localStorage.getItem('inventory')) || [];
+                inventoryArr.push(inventoryExit);
+                localStorage.setItem('inventory', JSON.stringify(inventoryArr));
+                
+                loadInvoices();
+                loadRevenues();
+                loadInventory();
+                
+                if (document.getElementById('summary').classList.contains('active')) {
+                    updateSummary();
+                }
+                
+                document.getElementById('invoiceFormOverlay').classList.remove('active');
+                document.getElementById('invoiceForm').reset();
+            } catch (e) {
+                console.error('Error saving invoice:', e);
+            }
+        });
+
+        // Save expense form
+        document.getElementById('expenseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                const expense = {
+                    id: generateUUID(),
+                    date: document.getElementById('expenseDate').value,
+                    amount: parseFloat(document.getElementById('expenseAmount').value),
+                    category: document.getElementById('expenseCategory').value,
+                    supplier: document.getElementById('expenseSupplier').value
+                };
+                
+                const expensesArr = JSON.parse(localStorage.getItem('expenses')) || [];
+                expensesArr.push(expense);
+                localStorage.setItem('expenses', JSON.stringify(expensesArr));
+                
+                loadExpenses();
+                
+                if (document.getElementById('summary').classList.contains('active')) {
+                    updateSummary();
+                }
+                
+                document.getElementById('expenseForm').reset();
+                const today = new Date();
+                document.getElementById('expenseDate').value = today.toISOString().substring(0, 10);
+            } catch (e) {
+                console.error('Error saving expense:', e);
+            }
+        });
+
+        // Save revenue form
+        document.getElementById('revenueForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                const revenue = {
+                    id: generateUUID(),
+                    date: document.getElementById('revenueDate').value,
+                    amount: parseFloat(document.getElementById('revenueAmount').value),
+                    category: document.getElementById('revenueCategory').value,
+                    channel: document.getElementById('revenueChannel').value
+                };
+                
+                const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                revenuesArr.push(revenue);
+                localStorage.setItem('revenues', JSON.stringify(revenuesArr));
+                
+                loadRevenues();
+                
+                if (document.getElementById('summary').classList.contains('active')) {
+                    updateSummary();
+                }
+                
+                document.getElementById('revenueForm').reset();
+                const today = new Date();
+                document.getElementById('revenueDate').value = today.toISOString().substring(0, 10);
+            } catch (e) {
+                console.error('Error saving revenue:', e);
+            }
+        });
+
+        // Load invoices
+        function loadInvoices() {
+            const invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+            const tableBody = document.getElementById('invoicesTableBody');
+            tableBody.innerHTML = '';
+            
+            if (invoices.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay facturas registradas</td></tr>';
+                return;
+            }
+            
+            invoices.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(invoice => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(invoice.date)}</td>
+                    <td>${invoice.customerName}</td>
+                    <td>${invoice.quantity.toFixed(2)}</td>
+                    <td>${invoice.coffeeType}</td>
+                    <td>${formatCurrency(invoice.totalAmount)}</td>
+                    <td>
+                        <i class="fas fa-eye text-primary action-btn" data-action="view" data-id="${invoice.id}"></i>
+                        <i class="fas fa-edit text-warning action-btn" data-action="edit" data-id="${invoice.id}"></i>
+                        <i class="fas fa-trash text-danger action-btn" data-action="delete" data-id="${invoice.id}"></i>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            document.querySelectorAll('#invoicesTableBody .action-btn').forEach(btn => {
+                btn.addEventListener('click', handleInvoiceAction);
+            });
+        }
+
+        // Load expenses
+        function loadExpenses() {
+            const expensesArr = JSON.parse(localStorage.getItem('expenses')) || [];
+            const tableBody = document.getElementById('expensesTableBody');
+            tableBody.innerHTML = '';
+            
+            if (expensesArr.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No hay gastos registrados</td></tr>';
+                return;
+            }
+            
+            expensesArr.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(expense.date)}</td>
+                    <td>${formatCurrency(expense.amount)}</td>
+                    <td>${expense.category}</td>
+                    <td>${expense.supplier}</td>
+                    <td>
+                        <i class="fas fa-edit text-warning action-btn" data-action="edit" data-id="${expense.id}" data-type="expense"></i>
+                        <i class="fas fa-trash text-danger action-btn" data-action="delete" data-id="${expense.id}" data-type="expense"></i>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            document.querySelectorAll('#expensesTableBody .action-btn').forEach(btn => {
+                btn.addEventListener('click', handleTransactionAction);
+            });
+        }
+
+        // Load revenues
+        function loadRevenues() {
+            const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+            const tableBody = document.getElementById('revenuesTableBody');
+            tableBody.innerHTML = '';
+            
+            if (revenuesArr.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No hay ingresos registrados</td></tr>';
+                return;
+            }
+            
+            revenuesArr.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(revenue => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(revenue.date)}</td>
+                    <td>${formatCurrency(revenue.amount)}</td>
+                    <td>${revenue.category}</td>
+                    <td>${revenue.channel}</td>
+                    <td>
+                        <i class="fas fa-edit text-warning action-btn" data-action="edit" data-id="${revenue.id}" data-type="revenue"></i>
+                        <i class="fas fa-trash text-danger action-btn" data-action="delete" data-id="${revenue.id}" data-type="revenue"></i>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            document.querySelectorAll('#revenuesTableBody .action-btn').forEach(btn => {
+                btn.addEventListener('click', handleTransactionAction);
+            });
+        }
+
+        // Load inventory
+        function loadInventory() {
+            const inventoryArr = JSON.parse(localStorage.getItem('inventory')) || [];
+            const tableBody = document.getElementById('inventoryTableBody');
+            tableBody.innerHTML = '';
+            
+            if (inventoryArr.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No hay datos de inventario disponibles</td></tr>';
+            } else {
+                inventoryArr.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.type}</td>
+                        <td>${getCategoryFromType(item.type)}</td>
+                        <td>${item.movementType || 'Entrada'}</td>
+                        <td>${item.quantity.toFixed(2)}</td>
+                        <td>${item.unit}</td>
+                        <td>${formatCurrency(item.value)}</td>
+                        <td>${formatDate(item.date)}</td>
+                        <td>
+                            <i class="fas fa-edit text-warning action-btn" data-action="edit" data-id="${item.id}" data-type="inventory"></i>
+                            <i class="fas fa-trash text-danger action-btn" data-action="delete" data-id="${item.id}" data-type="inventory"></i>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                document.querySelectorAll('#inventoryTableBody .action-btn').forEach(btn => {
+                    btn.addEventListener('click', handleInventoryAction);
+                });
+            }
+            
+            const inventoryStock = JSON.parse(localStorage.getItem('inventoryStock')) || {};
+            updateInventoryChart(inventoryStock);
+            updateInventorySummaryList(inventoryStock);
+        }
+
+        // Load clients
+        function loadClients() {
+            const clientsArr = JSON.parse(localStorage.getItem('clients')) || [];
+            const tableBody = document.getElementById('clientsTableBody');
+            tableBody.innerHTML = '';
+            
+            if (clientsArr.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No hay clientes registrados</td></tr>';
+                return;
+            }
+            
+            clientsArr.sort((a, b) => a.name.localeCompare(b.name)).forEach(client => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.cedula || '-'}</td>
+                    <td>${client.nit || '-'}</td>
+                    <td>${client.rut || '-'}</td>
+                    <td>${client.phone || '-'}</td>
+                    <td>${client.city || '-'}</td>
+                    <td>
+                        <i class="fas fa-file-invoice text-primary action-btn" data-action="invoices" data-id="${client.id}" title="Ver Facturas"></i>
+                        <i class="fas fa-edit text-warning action-btn" data-action="edit" data-id="${client.id}" title="Editar"></i>
+                        <i class="fas fa-trash text-danger action-btn" data-action="delete" data-id="${client.id}" title="Eliminar"></i>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            document.querySelectorAll('#clientsTableBody .action-btn').forEach(btn => {
+                btn.addEventListener('click', handleClientAction);
+            });
+        }
+
+        // Helper function to determine category from type
+        function getCategoryFromType(type) {
+            if (type.includes('Café')) {
+                return 'Café';
+            }
+            return type;
+        }
+
+        // Handle invoice actions (view, edit, delete)
+        function handleInvoiceAction(e) {
+            const action = e.target.getAttribute('data-action');
+            const id = e.target.getAttribute('data-id');
+            const invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+            const invoice = invoices.find(inv => inv.id === id);
+            
+            if (action === 'view' || action === 'edit') {
+                window.lastFocusedElement = e.target;
+                document.getElementById('editInvoiceId').value = invoice.id;
+                document.getElementById('editCustomerName').value = invoice.customerName;
+                document.getElementById('editCustomerCedula').value = invoice.customerCedula || '';
+                document.getElementById('editCustomerNIT').value = invoice.customerNIT || '';
+                document.getElementById('editCustomerRUT').value = invoice.customerRUT || '';
+                document.getElementById('editInvoiceDate').value = invoice.date;
+                document.getElementById('editQuantity').value = invoice.quantity;
+                document.getElementById('editCoffeeType').value = invoice.coffeeType;
+                document.getElementById('editUnitPrice').value = invoice.unitPrice;
+                document.getElementById('editTotalAmount').value = invoice.totalAmount.toFixed(2);
+                
+                const isViewOnly = action === 'view';
+                document.getElementById('editCustomerName').readOnly = isViewOnly;
+                document.getElementById('editCustomerCedula').readOnly = isViewOnly;
+                document.getElementById('editCustomerNIT').readOnly = isViewOnly;
+                document.getElementById('editCustomerRUT').readOnly = isViewOnly;
+                document.getElementById('editInvoiceDate').readOnly = isViewOnly;
+                document.getElementById('editQuantity').readOnly = isViewOnly;
+                document.getElementById('editCoffeeType').disabled = isViewOnly;
+                document.getElementById('editUnitPrice').readOnly = isViewOnly;
+                
+                document.getElementById('saveInvoiceChanges').style.display = isViewOnly ? 'none' : 'block';
+                
+                if (!isViewOnly) {
+                    flatpickr("#editInvoiceDate", {
+                        dateFormat: "Y-m-d",
+                        locale: "es"
+                    });
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('invoiceDetailsModal'));
+                modal.show();
+                
+                setTimeout(() => {
+                    document.getElementById('editCustomerName').focus();
+                }, 500);
+            } else if (action === 'delete') {
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                document.getElementById('confirmationMessage').textContent = '¿Está seguro que desea eliminar esta factura?';
+                modal.show();
+                document.getElementById('confirmButton').onclick = function() {
+                    deleteInvoice(id);
+                    modal.hide();
+                };
+            }
+        }
+
+        // Handle transaction actions (edit, delete)
+        function handleTransactionAction(e) {
+            const action = e.target.getAttribute('data-action');
+            const id = e.target.getAttribute('data-id');
+            const type = e.target.getAttribute('data-type');
+            
+            if (action === 'edit') {
+                window.lastFocusedElement = e.target;
+                
+                if (type === 'expense') {
+                    const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+                    const expense = expenses.find(exp => exp.id === id);
+                    
+                    if (expense) {
+                        document.getElementById('editExpenseId').value = expense.id;
+                        document.getElementById('editExpenseDate').value = expense.date;
+                        document.getElementById('editExpenseAmount').value = expense.amount;
+                        document.getElementById('editExpenseCategory').value = expense.category;
+                        document.getElementById('editExpenseSupplier').value = expense.supplier;
+                        
+                        flatpickr("#editExpenseDate", {
+                            dateFormat: "Y-m-d",
+                            locale: "es"
+                        });
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('expenseDetailsModal'));
+                        modal.show();
+                    }
+                } else if (type === 'revenue') {
+                    const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                    const revenue = revenuesArr.find(rev => rev.id === id);
+                    
+                    if (revenue) {
+                        document.getElementById('editRevenueId').value = revenue.id;
+                        document.getElementById('editRevenueDate').value = revenue.date;
+                        document.getElementById('editRevenueAmount').value = revenue.amount;
+                        document.getElementById('editRevenueCategory').value = revenue.category;
+                        document.getElementById('editRevenueChannel').value = revenue.channel;
+                        
+                        flatpickr("#editRevenueDate", {
+                            dateFormat: "Y-m-d",
+                            locale: "es"
+                        });
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('revenueDetailsModal'));
+                        modal.show();
+                    }
+                }
+            } else if (action === 'delete') {
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                document.getElementById('confirmationMessage').textContent = `¿Está seguro que desea eliminar este ${type === 'expense' ? 'gasto' : 'ingreso'}?`;
+                modal.show();
+                document.getElementById('confirmButton').onclick = function() {
+                    if (type === 'expense') deleteExpense(id);
+                    else deleteRevenue(id);
+                    modal.hide();
+                };
+            }
+        }
+
+        // Replace the handleInventoryAction function with this improved version
+        function handleInventoryAction(e) {
+            const action = e.target.getAttribute('data-action');
+            const id = e.target.getAttribute('data-id');
+            
+            if (action === 'edit') {
+                const inventoryArr = JSON.parse(localStorage.getItem('inventory')) || [];
+                const item = inventoryArr.find(item => item.id === id);
+                
+                if (item) {
+                    // Set form title for edit mode
+                    document.getElementById('inventoryFormTitle').textContent = 'Editar Ítem de Inventario';
+                    
+                    // Populate form with existing item data
+                    document.getElementById('editInventoryId').value = item.id;
+                    document.getElementById('inventoryDate').value = item.date;
+                    document.getElementById('inventoryType').value = item.type;
+                    document.getElementById('inventoryQuantity').value = item.quantity;
+                    document.getElementById('inventoryUnit').value = item.unit;
+                    document.getElementById('inventoryDescription').value = item.description || '';
+                    
+                    // Set button text
+                    document.getElementById('inventorySaveButton').textContent = 'Guardar Cambios';
+                    
+                    // Show form overlay
+                    document.getElementById('inventoryFormOverlay').classList.add('active');
+                    
+                    // Initialize date picker
+                    flatpickr("#inventoryDate", {
+                        dateFormat: "Y-m-d",
+                        locale: "es"
+                    });
+                }
+            } else if (action === 'delete') {
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                document.getElementById('confirmationMessage').textContent = '¿Está seguro que desea eliminar este ítem de inventario?';
+                modal.show();
+                document.getElementById('confirmButton').onclick = function() {
+                    deleteInventoryItem(id);
+                    modal.hide();
+                };
+            }
+        }
+
+        // Handle client actions (invoices, edit, delete)
+        function handleClientAction(e) {
+            const action = e.target.getAttribute('data-action');
+            const id = e.target.getAttribute('data-id');
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const client = clients.find(c => c.id === id);
+            
+            if (!client) {
+                showToast('error', 'Cliente no encontrado');
+                return;
+            }
+            
+            if (action === 'invoices') {
+                showClientInvoices(client);
+            } else if (action === 'edit') {
+                window.lastFocusedElement = e.target;
+                document.getElementById('editClientId').value = client.id;
+                document.getElementById('editClientName').value = client.name;
+                document.getElementById('editClientCedula').value = client.cedula || '';
+                document.getElementById('editClientNIT').value = client.nit || '';
+                document.getElementById('editClientRUT').value = client.rut || '';
+                document.getElementById('editClientPhone').value = client.phone || '';
+                document.getElementById('editClientAddress').value = client.address || '';
+                document.getElementById('editClientEmail').value = client.email || '';
+                document.getElementById('editClientCity').value = client.city || '';
+                
+                const modal = new bootstrap.Modal(document.getElementById('clientDetailsModal'));
+                modal.show();
+                
+                setTimeout(() => {
+                    document.getElementById('editClientName').focus();
+                }, 500);
+            } else if (action === 'delete') {
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                document.getElementById('confirmationMessage').textContent = '¿Está seguro que desea eliminar este cliente?';
+                document.getElementById('confirmButton').textContent = 'Eliminar';
+                modal.show();
+                document.getElementById('confirmButton').onclick = function() {
+                    deleteClient(id);
+                    modal.hide();
+                };
+            }
+        }
+
+        // Show client invoices in modal
+        function showClientInvoices(client) {
+            const invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+            const tableBody = document.getElementById('clientInvoicesTableBody');
+            tableBody.innerHTML = '';
+            
+            const clientInvoices = invoices.filter(invoice => 
+                (client.cedula && invoice.customerCedula === client.cedula) || 
+                (client.nit && invoice.customerNIT === client.nit) || 
+                (client.rut && invoice.customerRUT === client.rut) ||
+                (invoice.customerName === client.name)
+            );
+            
+            document.getElementById('clientInvoicesModalLabel').textContent = `Facturas de ${client.name}`;
+            
+            if (clientInvoices.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No hay facturas para este cliente</td></tr>';
+            } else {
+                clientInvoices.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(invoice => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDate(invoice.date)}</td>
+                        <td>${invoice.quantity.toFixed(2)}</td>
+                        <td>${invoice.coffeeType}</td>
+                        <td>${formatCurrency(invoice.totalAmount)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('clientInvoicesModal'));
+            modal.show();
+        }
+
+        // Delete invoice
+        function deleteInvoice(id) {
+            try {
+                let invoicesArr = JSON.parse(localStorage.getItem('invoices')) || [];
+                invoicesArr = invoicesArr.filter(inv => inv.id !== id);
+                localStorage.setItem('invoices', JSON.stringify(invoicesArr));
+                
+                let revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                revenuesArr = revenuesArr.filter(rev => rev.invoiceId !== id);
+                localStorage.setItem('revenues', JSON.stringify(revenuesArr));
+                
+                loadInvoices();
+                loadRevenues();
+                
+                if (document.getElementById('summary').classList.contains('active')) {
+                    updateSummary();
+                }
+            } catch (e) {
+                console.error('Error deleting invoice:', e);
+            }
+        }
+
+        // Delete expense
+        function deleteExpense(id) {
+            try {
+                let expensesArr = JSON.parse(localStorage.getItem('expenses')) || [];
+                expensesArr = expensesArr.filter(exp => exp.id !== id);
+                localStorage.setItem('expenses', JSON.stringify(expensesArr));
+                
+                loadExpenses();
+                
+                if (document.getElementById('summary').classList.contains('active')) {
+                    updateSummary();
+                }
+            } catch (e) {
+                console.error('Error deleting expense:', e);
+            }
+        }
+
+        // Delete revenue
+        function deleteRevenue(id) {
+            try {
+                let revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                revenuesArr = revenuesArr.filter(rev => rev.id !== id);
+                localStorage.setItem('revenues', JSON.stringify(revenuesArr));
+                
+                loadRevenues();
+                
+                if (document.getElementById('summary').classList.contains('active')) {
+                    updateSummary();
+                }
+            } catch (e) {
+                console.error('Error deleting revenue:', e);
+            }
+        }
+
+        // Delete inventory item
+        function deleteInventoryItem(id) {
+            try {
+                let inventoryArr = JSON.parse(localStorage.getItem('inventory')) || [];
+                const itemToDelete = inventoryArr.find(item => item.id === id);
+                
+                if (itemToDelete) {
+                    const inventoryStock = JSON.parse(localStorage.getItem('inventoryStock')) || {};
+                    
+                    if (itemToDelete.movementType === 'Entrada' || !itemToDelete.movementType) {
+                        inventoryStock[itemToDelete.type] -= itemToDelete.quantity;
+                    } else if (itemToDelete.movementType === 'Salida') {
+                        inventoryStock[itemToDelete.type] += itemToDelete.quantity;
+                    }
+                    
+                    localStorage.setItem('inventoryStock', JSON.stringify(inventoryStock));
+                }
+                
+                inventoryArr = inventoryArr.filter(item => item.id !== id);
+                localStorage.setItem('inventory', JSON.stringify(inventoryArr));
+                
+                loadInventory();
+            } catch (e) {
+                console.error('Error deleting inventory item:', e);
+            }
+        }
+
+        // Delete client
+        function deleteClient(id) {
+            try {
+                let clientsArr = JSON.parse(localStorage.getItem('clients')) || [];
+                clientsArr = clientsArr.filter(client => client.id !== id);
+                localStorage.setItem('clients', JSON.stringify(clientsArr));
+                
+                loadClients();
+                showToast('success', 'Cliente eliminado correctamente');
+            } catch (e) {
+                console.error('Error deleting client:', e);
+                showToast('error', 'Error al eliminar el cliente');
+            }
+        }
+
+        // Add debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        // Update summary data
+        function updateSummary() {
+            try {
+                const selectedMonth = document.getElementById('monthSelector').value;
+                const [year, month] = selectedMonth.split('-');
+                
+                const expensesArr = JSON.parse(localStorage.getItem('expenses')) || [];
+                const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                
+                const monthExpenses = expensesArr.filter(exp => exp.date.startsWith(selectedMonth));
+                const monthRevenues = revenuesArr.filter(rev => rev.date.startsWith(selectedMonth));
+                
+                const financialData = monthExpenses.reduce(
+                    (acc, exp) => ({ ...acc, totalExpenses: acc.totalExpenses + exp.amount }),
+                    { totalExpenses: 0 }
+                );
+                
+                financialData.totalRevenues = monthRevenues.reduce((sum, rev) => sum + rev.amount, 0);
+                financialData.netProfit = financialData.totalRevenues - financialData.totalExpenses;
+                
+                document.getElementById('totalExpenses').textContent = formatCurrency(financialData.totalExpenses);
+                document.getElementById('totalRevenues').textContent = formatCurrency(financialData.totalRevenues);
+                document.getElementById('netProfit').textContent = formatCurrency(financialData.netProfit);
+                
+                showLoading();
+                requestAnimationFrame(() => {
+                    updateCoffeeTypeChart(monthRevenues);
+                    updateRevenueExpenseChart(monthExpenses, monthRevenues, year, month);
+                    hideLoading();
+                });
+            } catch (e) {
+                console.error('Error updating summary:', e);
+                hideLoading();
+            }
+        }
+
+        // Month selector change event with debounce
+        document.getElementById('monthSelector').addEventListener('change', debounce(updateSummary, 200));
+
+        // Inventory Chart
+        function updateInventoryChart(inventoryStock) {
+            try {
+                const labels = Object.keys(inventoryStock).filter(type => inventoryStock[type] > 0);
+                const data = labels.map(type => inventoryStock[type]);
+                
+                const chartContainer = document.getElementById('inventoryChart');
+                
+                if (window.inventoryChart) {
+                    window.inventoryChart.data.labels = labels;
+                    window.inventoryChart.data.datasets[0].data = data;
+                    window.inventoryChart.update();
+                } else {
+                    while (chartContainer.firstChild) {
+                        chartContainer.firstChild.remove();
+                    }
+                    
+                    const canvas = document.createElement('canvas');
+                    chartContainer.appendChild(canvas);
+                    
+                    window.inventoryChart = new Chart(canvas, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: [
+                                    '#6F4E37',
+                                    '#C4A484',
+                                    '#D2B48C',
+                                    '#3A2718',
+                                    '#8B4513',
+                                    '#A0522D'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+                
+                updateInventorySummaryList(inventoryStock);
+            } catch (e) {
+                console.error('Error updating inventory chart:', e);
+            }
+        }
+
+        // Revenue vs Expense Chart
+        function updateRevenueExpenseChart(expenses, revenues, year, month) {
+            try {
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const expensesByDay = Array(daysInMonth).fill(0);
+                const revenuesByDay = Array(daysInMonth).fill(0);
+                
+                expenses.forEach(exp => {
+                    const day = parseInt(exp.date.split('-')[2]) - 1;
+                    expensesByDay[day] += exp.amount;
+                });
+                
+                revenues.forEach(rev => {
+                    const day = parseInt(rev.date.split('-')[2]) - 1;
+                    revenuesByDay[day] += rev.amount;
+                });
+                
+                const labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
+                
+                const chartContainer = document.getElementById('revenueExpenseChart');
+                
+                if (window.revenueExpenseChart) {
+                    window.revenueExpenseChart.data.labels = labels;
+                    window.revenueExpenseChart.data.datasets[0].data = revenuesByDay;
+                    window.revenueExpenseChart.data.datasets[1].data = expensesByDay;
+                    window.revenueExpenseChart.update();
+                } else {
+                    while (chartContainer.firstChild) {
+                        chartContainer.firstChild.remove();
+                    }
+                    
+                    const canvas = document.createElement('canvas');
+                    chartContainer.appendChild(canvas);
+                    
+                    window.revenueExpenseChart = new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Ingresos',
+                                    data: revenuesByDay,
+                                    borderColor: '#28a745',
+                                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Gastos',
+                                    data: expensesByDay,
+                                    borderColor: '#dc3545',
+                                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                    fill: true,
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error updating revenue/expense chart:', e);
+            }
+        }
+
+        // New Inventory button click handler
+        document.getElementById('newInventoryItemBtn').addEventListener('click', function() {
+            resetInventoryForm();
+            document.getElementById('inventoryFormOverlay').classList.add('active');
+            
+            const today = new Date();
+            document.getElementById('inventoryDate').value = today.toISOString().substring(0, 10);
+        });
+
+        // Modify closeInventoryForm event handler to reset form state
+        document.getElementById('closeInventoryForm').addEventListener('click', function() {
+            resetInventoryForm();
+            document.getElementById('inventoryFormOverlay').classList.remove('active');
+        });
+
+        // Modify cancelInventory event handler to reset form state
+        document.getElementById('cancelInventory').addEventListener('click', function() {
+            resetInventoryForm();
+            document.getElementById('inventoryFormOverlay').classList.remove('active');
+        });
+
+        // Add a function to reset the inventory form state
+        function resetInventoryForm() {
+            document.getElementById('inventoryFormTitle').textContent = 'Nuevo Ítem de Inventario';
+            document.getElementById('editInventoryId').value = '';
+            document.getElementById('inventoryForm').reset();
+            document.getElementById('inventorySaveButton').textContent = 'Guardar';
+        }
+
+        // Update the inventory form submit handler to handle both new and edit operations
+        document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                const editId = document.getElementById('editInventoryId').value;
+                const isEdit = editId !== '';
+                
+                const inventoryItem = {
+                    id: isEdit ? editId : generateUUID(),
+                    date: document.getElementById('inventoryDate').value,
+                    type: document.getElementById('inventoryType').value,
+                    quantity: parseFloat(document.getElementById('inventoryQuantity').value),
+                    unit: document.getElementById('inventoryUnit').value,
+                    description: document.getElementById('inventoryDescription').value,
+                    value: parseFloat(document.getElementById('inventoryQuantity').value) * 10000,
+                    movementType: 'Entrada'
+                };
+                
+                const inventoryArr = JSON.parse(localStorage.getItem('inventory')) || [];
+                const inventoryStock = JSON.parse(localStorage.getItem('inventoryStock')) || {};
+                
+                if (isEdit) {
+                    // Find the original item
+                    const itemIndex = inventoryArr.findIndex(item => item.id === editId);
+                    if (itemIndex === -1) {
+                        throw new Error('Inventory item not found');
+                    }
+                    
+                    const oldItem = inventoryArr[itemIndex];
+                    
+                    // Reverse the effect of the old item on inventory stock
+                    if (oldItem.movementType === 'Entrada' || !oldItem.movementType) {
+                        inventoryStock[oldItem.type] -= oldItem.quantity;
+                    } else if (oldItem.movementType === 'Salida') {
+                        inventoryStock[oldItem.type] += oldItem.quantity;
+                    }
+                    
+                    // Apply the new item to inventory stock
+                    if (inventoryItem.movementType === 'Entrada' || !inventoryItem.movementType) {
+                        inventoryStock[inventoryItem.type] = (inventoryStock[inventoryItem.type] || 0) + inventoryItem.quantity;
+                    } else if (inventoryItem.movementType === 'Salida') {
+                        inventoryStock[inventoryItem.type] = (inventoryStock[inventoryItem.type] || 0) - inventoryItem.quantity;
+                    }
+                    
+                    // Update the item in the array
+                    inventoryArr[itemIndex] = inventoryItem;
+                } else {
+                    // Add the new item to inventory stock
+                    if (!inventoryStock[inventoryItem.type]) {
+                        inventoryStock[inventoryItem.type] = 0;
+                    }
+                    inventoryStock[inventoryItem.type] += inventoryItem.quantity;
+                    
+                    // Add the new item to the array
+                    inventoryArr.push(inventoryItem);
+                }
+                
+                localStorage.setItem('inventory', JSON.stringify(inventoryArr));
+                localStorage.setItem('inventoryStock', JSON.stringify(inventoryStock));
+                
+                loadInventory();
+                
+                resetInventoryForm();
+                document.getElementById('inventoryFormOverlay').classList.remove('active');
+                
+                showToast('success', isEdit ? 'Ítem de inventario actualizado correctamente' : 'Ítem de inventario agregado correctamente');
+            } catch (e) {
+                console.error('Error saving inventory item:', e);
+                showToast('error', 'Error al guardar el ítem de inventario: ' + e.message);
+            }
+        });
+
+        // Reset data button
+        document.getElementById('resetDataBtn').addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            document.getElementById('confirmationMessage').textContent = '¿Está seguro que desea eliminar todos los datos? Esta acción no se puede deshacer.';
+            document.getElementById('confirmButton').textContent = 'Eliminar todos los datos';
+            modal.show();
+            
+            document.getElementById('confirmButton').onclick = function() {
+                localStorage.removeItem('invoices');
+                localStorage.removeItem('expenses');
+                localStorage.removeItem('revenues');
+                localStorage.removeItem('inventory');
+                localStorage.removeItem('clients');
+                
+                initializeData();
+                loadInvoices();
+                loadExpenses();
+                loadRevenues();
+                loadInventory();
+                loadClients();
+                updateSummary();
+                
+                modal.hide();
+            };
+        });
+
+        // Add a new function to update the inventory summary list
+        function updateInventorySummaryList(inventoryStock) {
+            try {
+                const summaryBody = document.getElementById('inventorySummaryBody');
+                summaryBody.innerHTML = '';
+                
+                const sortedTypes = Object.keys(inventoryStock).sort();
+                
+                if (sortedTypes.length === 0 || sortedTypes.every(type => inventoryStock[type] <= 0)) {
+                    summaryBody.innerHTML = '<tr><td colspan="2" class="text-center">No hay datos disponibles</td></tr>';
+                    return;
+                }
+                
+                sortedTypes.forEach(type => {
+                    const quantity = inventoryStock[type];
+                    if (quantity <= 0) return;
+                    
+                    const row = document.createElement('tr');
+                    
+                    let quantityClass = '';
+                    if (quantity < 10) {
+                        quantityClass = 'text-warning fw-bold';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${type}</td>
+                        <td class="${quantityClass}">${quantity.toFixed(2)} kg</td>
+                    `;
+                    summaryBody.appendChild(row);
+                });
+                
+            } catch (e) {
+                console.error('Error updating inventory summary list:', e);
+            }
+        }
+
+        // Calculate edit total
+        function calculateEditTotal() {
+            const quantity = parseFloat(document.getElementById('editQuantity').value) || 0;
+            const unitPrice = parseFloat(document.getElementById('editUnitPrice').value) || 0;
+            const total = quantity * unitPrice;
+            document.getElementById('editTotalAmount').value = total.toFixed(2);
+        }
+
+        // Add event listeners for edit invoice modal
+        document.getElementById('editQuantity').addEventListener('input', calculateEditTotal);
+        document.getElementById('editUnitPrice').addEventListener('input', calculateEditTotal);
+        document.getElementById('editCoffeeType').addEventListener('change', calculateEditTotal);
+
+        // Add toast notification function
+        function showToast(type, message) {
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const toastId = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.className = `toast ${type === 'error' ? 'bg-danger text-white' : 'bg-success text-white'}`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <strong class="me-auto">${type === 'error' ? 'Error' : 'Éxito'}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+
+        // Save invoice changes
+        function saveInvoiceChanges() {
+            try {
+                const saveButton = document.getElementById('saveInvoiceChanges');
+                const originalButtonText = saveButton.innerHTML;
+                saveButton.disabled = true;
+                saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+                
+                const form = document.getElementById('invoiceDetailsForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalButtonText;
+                    return;
+                }
+                
+                const invoiceId = document.getElementById('editInvoiceId').value;
+                const coffeeType = document.getElementById('editCoffeeType').value;
+                const newQuantity = parseFloat(document.getElementById('editQuantity').value);
+                
+                const invoicesArr = JSON.parse(localStorage.getItem('invoices')) || [];
+                const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                const inventoryStock = JSON.parse(localStorage.getItem('inventoryStock')) || {};
+                
+                const invoiceIndex = invoicesArr.findIndex(inv => inv.id === invoiceId);
+                if (invoiceIndex === -1) {
+                    throw new Error('Invoice not found');
+                }
+                
+                const oldInvoice = invoicesArr[invoiceIndex];
+                const oldQuantity = oldInvoice.quantity;
+                const oldCoffeeType = oldInvoice.coffeeType;
+                
+                if (oldQuantity !== newQuantity || oldCoffeeType !== coffeeType) {
+                    const oldFullCoffeeType = oldCoffeeType === 'Cacao' ? 'Cacao' : 'Café ' + oldCoffeeType;
+                    inventoryStock[oldFullCoffeeType] = (inventoryStock[oldFullCoffeeType] || 0) + oldQuantity;
+                    
+                    const newFullCoffeeType = coffeeType === 'Cacao' ? 'Cacao' : 'Café ' + coffeeType;
+                    const currentStock = inventoryStock[newFullCoffeeType] || 0;
+                    
+                    if (currentStock < newQuantity) {
+                        showToast('error', `No hay suficiente inventario disponible. Solo hay ${currentStock.toFixed(2)} kg de ${coffeeType} disponible.`);
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = originalButtonText;
+                        return;
+                    }
+                    
+                    inventoryStock[newFullCoffeeType] -= newQuantity;
+                }
+                
+                const updatedInvoice = {
+                    ...oldInvoice,
+                    customerName: document.getElementById('editCustomerName').value,
+                    customerCedula: document.getElementById('editCustomerCedula').value,
+                    customerNIT: document.getElementById('editCustomerNIT').value,
+                    customerRUT: document.getElementById('editCustomerRUT').value,
+                    date: document.getElementById('editInvoiceDate').value,
+                    quantity: newQuantity,
+                    coffeeType: coffeeType,
+                    unitPrice: parseFloat(document.getElementById('editUnitPrice').value),
+                    totalAmount: parseFloat(document.getElementById('editTotalAmount').value)
+                };
+                
+                const revenueIndex = revenuesArr.findIndex(rev => rev.invoiceId === invoiceId);
+                if (revenueIndex !== -1) {
+                    revenuesArr[revenueIndex] = {
+                        ...revenuesArr[revenueIndex],
+                        date: updatedInvoice.date,
+                        amount: updatedInvoice.totalAmount,
+                        category: updatedInvoice.coffeeType === 'Cacao' ? 'Cacao' : 'Café ' + updatedInvoice.coffeeType,
+                        channel: updatedInvoice.customerName
+                    };
+                }
+                
+                invoicesArr[invoiceIndex] = updatedInvoice;
+                
+                localStorage.setItem('invoices', JSON.stringify(invoicesArr));
+                localStorage.setItem('revenues', JSON.stringify(revenuesArr));
+                localStorage.setItem('inventoryStock', JSON.stringify(inventoryStock));
+                
+                bootstrap.Modal.getInstance(document.getElementById('invoiceDetailsModal')).hide();
+                
+                requestAnimationFrame(() => {
+                    loadInvoices();
+                    loadRevenues();
+                    loadInventory();
+                    
+                    if (document.getElementById('summary').classList.contains('active')) {
+                        updateSummary();
+                    }
+                    
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalButtonText;
+                    
+                    showToast('success', 'Factura actualizada correctamente');
+                });
+            } catch (e) {
+                console.error('Error saving invoice changes:', e);
+                showToast('error', 'Error al guardar los cambios: ' + e.message);
+                const saveButton = document.getElementById('saveInvoiceChanges');
+                saveButton.disabled = false;
+                saveButton.innerHTML = 'Guardar Cambios';
+            }
+        }
+
+        document.getElementById('saveInvoiceChanges').addEventListener('click', saveInvoiceChanges);
+
+        // Save expense changes
+        document.getElementById('saveExpenseChanges').addEventListener('click', function() {
+            try {
+                const saveButton = document.getElementById('saveExpenseChanges');
+                const originalButtonText = saveButton.innerHTML;
+                saveButton.disabled = true;
+                saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+                
+                const form = document.getElementById('expenseDetailsForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalButtonText;
+                    return;
+                }
+                
+                const expenseId = document.getElementById('editExpenseId').value;
+                const expensesArr = JSON.parse(localStorage.getItem('expenses')) || [];
+                const expenseIndex = expensesArr.findIndex(expense => expense.id === expenseId);
+                
+                if (expenseIndex === -1) {
+                    throw new Error('Gasto no encontrado');
+                }
+                
+                expensesArr[expenseIndex] = {
+                    ...expensesArr[expenseIndex],
+                    date: document.getElementById('editExpenseDate').value,
+                    amount: parseFloat(document.getElementById('editExpenseAmount').value),
+                    category: document.getElementById('editExpenseCategory').value,
+                    supplier: document.getElementById('editExpenseSupplier').value
+                };
+                
+                localStorage.setItem('expenses', JSON.stringify(expensesArr));
+                bootstrap.Modal.getInstance(document.getElementById('expenseDetailsModal')).hide();
+                
+                requestAnimationFrame(() => {
+                    loadExpenses();
+                    
+                    if (document.getElementById('summary').classList.contains('active')) {
+                        updateSummary();
+                    }
+                    
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalButtonText;
+                    
+                    showToast('success', 'Gasto actualizado correctamente');
+                });
+            } catch (e) {
+                console.error('Error saving expense changes:', e);
+                showToast('error', 'Error al guardar los cambios: ' + e.message);
+                const saveButton = document.getElementById('saveExpenseChanges');
+                saveButton.disabled = false;
+                saveButton.innerHTML = 'Guardar Cambios';
+            }
+        });
+
+        // Save revenue changes
+        document.getElementById('saveRevenueChanges').addEventListener('click', function() {
+            try {
+                const saveButton = document.getElementById('saveRevenueChanges');
+                const originalButtonText = saveButton.innerHTML;
+                saveButton.disabled = true;
+                saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+                
+                const form = document.getElementById('revenueDetailsForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalButtonText;
+                    return;
+                }
+                
+                const revenueId = document.getElementById('editRevenueId').value;
+                const revenuesArr = JSON.parse(localStorage.getItem('revenues')) || [];
+                const revenueIndex = revenuesArr.findIndex(revenue => revenue.id === revenueId);
+                
+                if (revenueIndex === -1) {
+                    throw new Error('Ingreso no encontrado');
+                }
+                
+                revenuesArr[revenueIndex] = {
+                    ...revenuesArr[revenueIndex],
+                    date: document.getElementById('editRevenueDate').value,
+                    amount: parseFloat(document.getElementById('editRevenueAmount').value),
+                    category: document.getElementById('editRevenueCategory').value,
+                    channel: document.getElementById('editRevenueChannel').value
+                };
+                
+                localStorage.setItem('revenues', JSON.stringify(revenuesArr));
+                bootstrap.Modal.getInstance(document.getElementById('revenueDetailsModal')).hide();
+                
+                requestAnimationFrame(() => {
+                    loadRevenues();
+                    
